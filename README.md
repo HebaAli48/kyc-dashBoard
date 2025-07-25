@@ -318,9 +318,10 @@ This is a full-stack KYC (Know Your Customer) Dashboard application, designed to
 
 1. Clone the repository:
 
-````bash
+```bash
 git clone https://github.com/HebaAli48/kyc-dashBoard.git
 cd kyc-dashboard
+```
 
 ---
 
@@ -331,7 +332,7 @@ Make sure Docker and Docker Compose are installed.
 ```bash
 # Build and run the app
 docker-compose up --build
-````
+```
 
 This will:
 
