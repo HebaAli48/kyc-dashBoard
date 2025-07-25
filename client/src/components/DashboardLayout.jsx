@@ -15,16 +15,17 @@ import {
   styled,
   Avatar,
 } from "@mui/material";
-import { Outlet, useNavigate, Navigate } from "react-router-dom";
+import { Outlet, useNavigate, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import LogoutIcon from "@mui/icons-material/Logout";
-import LoginIcon from "@mui/icons-material/Login";
 import PaidIcon from "@mui/icons-material/Paid";
 import PeopleIcon from "@mui/icons-material/People";
 import SettingsIcon from "@mui/icons-material/Settings";
 import HomeIcon from "@mui/icons-material/Home";
+import { useEffect } from "react";
+import useAuthenticate from "../utils/useAuthenticate";
 
 const drawerWidth = 260;
 
@@ -58,15 +59,20 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
 const DashboardLayout = () => {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
-
-  const menuItems = [
-    { text: "Home", icon: <HomeIcon />, path: "/" },
-    { text: "Transactions", icon: <PaidIcon />, path: "/transactions" },
-    { text: "Users", icon: <PeopleIcon />, path: "/users-management" },
-    { text: "Audit Logs", icon: <AssessmentIcon />, path: "/audit-logs" },
-    { text: "Settings", icon: <SettingsIcon />, path: "/settings" },
-  ];
+  const {
+    token,
+    isGlobalAdmin,
+    isRegionalAdmin,
+    isSendingPartner,
+    isRecevingPartner,
+  } = useAuthenticate();
+  // Debugging effect - remove in production
+  // useEffect(() => {
+  //   console.log("Current user role:", user?.role);
+  //   console.log("User object:", user);
+  // }, [user]);
 
   if (loading) {
     return (
@@ -133,20 +139,89 @@ const DashboardLayout = () => {
         <Divider sx={{ my: 1 }} />
 
         <List sx={{ p: 2 }}>
-          {menuItems.map((item) => (
-            <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
+          {/* Home - Available to all roles */}
+          <ListItem disablePadding sx={{ mb: 1 }}>
+            <StyledListItemButton
+              onClick={() => navigate("/")}
+              selected={location.pathname === "/"}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <HomeIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="Home"
+                primaryTypographyProps={{ variant: "body1" }}
+              />
+            </StyledListItemButton>
+          </ListItem>
+
+          {/* Transactions - Available to all roles */}
+          <ListItem disablePadding sx={{ mb: 1 }}>
+            <StyledListItemButton
+              onClick={() => navigate("/transactions")}
+              selected={location.pathname === "/transactions"}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <PaidIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="Transactions"
+                primaryTypographyProps={{ variant: "body1" }}
+              />
+            </StyledListItemButton>
+          </ListItem>
+
+          {/* Users - Only for admins */}
+          {(isGlobalAdmin || isRegionalAdmin) && (
+            <ListItem disablePadding sx={{ mb: 1 }}>
               <StyledListItemButton
-                onClick={() => navigate(item.path)}
-                selected={location.pathname === item.path}
+                onClick={() => navigate("/users-management")}
+                selected={location.pathname === "/users-management"}
               >
-                <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 40 }}>
+                  <PeopleIcon />
+                </ListItemIcon>
                 <ListItemText
-                  primary={item.text}
+                  primary="Users"
                   primaryTypographyProps={{ variant: "body1" }}
                 />
               </StyledListItemButton>
             </ListItem>
-          ))}
+          )}
+
+          {/* Audit Logs - Only for admins */}
+          {(isGlobalAdmin || isRegionalAdmin) && (
+            <ListItem disablePadding sx={{ mb: 1 }}>
+              <StyledListItemButton
+                onClick={() => navigate("/audit-logs")}
+                selected={location.pathname === "/audit-logs"}
+              >
+                <ListItemIcon sx={{ minWidth: 40 }}>
+                  <AssessmentIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Audit Logs"
+                  primaryTypographyProps={{ variant: "body1" }}
+                />
+              </StyledListItemButton>
+            </ListItem>
+          )}
+
+          {/* Settings - Available to all roles */}
+          <ListItem disablePadding sx={{ mb: 1 }}>
+            <StyledListItemButton
+              onClick={() => navigate("/settings")}
+              selected={location.pathname === "/settings"}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <SettingsIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="Settings"
+                primaryTypographyProps={{ variant: "body1" }}
+              />
+            </StyledListItemButton>
+          </ListItem>
         </List>
 
         <Box sx={{ mt: "auto", p: 2 }}>

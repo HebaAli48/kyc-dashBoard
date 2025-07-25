@@ -1,9 +1,9 @@
 # docker-compose.yml
-version: '3.8'
+version: "3.8"
 
 services:
   mongo:
-    image: mongo:5.0
+    image: mongo:4.0
     container_name: kyc_mongo
     ports:
       - "27017:27017"

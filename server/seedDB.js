@@ -107,7 +107,6 @@ const generateAuditLogs = async (users, count = 100) => {
       action: actions[Math.floor(Math.random() * actions.length)],
       userId: user._id,
       details: `${user.role} ${user.username} performed action`,
-      ipAddress: `192.168.1.${Math.floor(Math.random() * 255)}`,
       status: Math.random() > 0.1 ? "success" : "failed",
       createdAt: new Date(
         Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000)

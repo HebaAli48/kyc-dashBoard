@@ -1,114 +1,142 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import axios from "axios";
+import { baseUrl } from "../utils/Localization";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Create axios instance with interceptors
-  const api = axios.create({
-    baseURL: "http://localhost:5000",
+  const [authState, setAuthState] = useState({
+    user: null,
+    loading: true,
+    error: null,
   });
 
-  // Add request interceptor to include token
-  api.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
-    }
-  );
+  // Create stable axios instance with useMemo
+  const api = useMemo(() => {
+    const instance = axios.create({
+      baseURL: baseUrl,
+    });
 
-  // Add response interceptor to handle 401 errors
-  api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (error.response?.status === 401) {
-        localStorage.removeItem("token");
-        setUser(null);
-        setError("Session expired. Please login again.");
-      }
-      return Promise.reject(error);
-    }
-  );
+    // Add request interceptor
+    instance.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem("token");
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
 
-  const checkAuth = async () => {
+    // Add response interceptor
+    instance.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("userData");
+          setAuthState((prev) => ({
+            ...prev,
+            user: null,
+            error: "Session expired. Please login again.",
+          }));
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return instance;
+  }, []); // Empty dependency array ensures this only runs once
+
+  const checkAuth = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      setLoading(false);
+      setAuthState((prev) => ({ ...prev, loading: false }));
       return;
     }
 
     try {
-      const res = await api.get("/api/auth/me");
-      setUser(res.data);
-      setError(null);
+      const { data } = await api.get("/api/auth/me");
+      setAuthState({
+        user: data,
+        loading: false,
+        error: null,
+      });
     } catch (err) {
-      console.error("Auth check failed:", err);
       localStorage.removeItem("token");
-      setError(
-        err.response?.data?.error || "Session expired. Please login again."
-      );
-    } finally {
-      setLoading(false);
+      localStorage.removeItem("userData");
+      setAuthState({
+        user: null,
+        loading: false,
+        error: err.response?.data?.error || "Authentication failed",
+      });
     }
-  };
+  }, [api]); // Only depends on api which is now stable
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   const login = async (credentials) => {
     try {
-      setError(null);
-      setLoading(true);
-      const res = await api.post("/api/auth/login", credentials);
+      setAuthState((prev) => ({ ...prev, loading: true, error: null }));
 
-      if (res.data.token) {
-        localStorage.setItem("token", res.data.token);
+      const { data } = await api.post("/api/auth/login", credentials);
 
-        // Fetch user details after successful login
-        const userRes = await api.get("/api/auth/me");
-        setUser(userRes.data);
-      }
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.user.role);
 
-      return res.data;
+      setAuthState({
+        user: data.user,
+        loading: false,
+        error: null,
+      });
+
+      return data.user;
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "Login failed";
-      setError(errorMessage);
-      throw err; // Re-throw the error for component handling
-    } finally {
-      setLoading(false);
+      const errorMessage = err.response?.data?.error || "Login failed";
+      setAuthState((prev) => ({
+        ...prev,
+        loading: false,
+        error: errorMessage,
+      }));
+      throw err;
     }
   };
 
   const logout = () => {
     localStorage.removeItem("token");
-    setUser(null);
-    setError(null);
+    localStorage.removeItem("role");
+    // localStorage.removeItem("userData");
+    setAuthState({
+      user: null,
+      loading: false,
+      error: null,
+    });
   };
 
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      ...authState,
+      login,
+      logout,
+      api,
+      checkAuth,
+    }),
+    [authState, api, checkAuth, login, logout]
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        error,
-        login,
-        logout,
-        api, // Provide the configured axios instance
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
 

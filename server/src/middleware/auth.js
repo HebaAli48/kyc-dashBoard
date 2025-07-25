@@ -16,11 +16,7 @@ export const authenticate = async (req, res, next) => {
       return res.status(401).json({ error: "Invalid token - user not found" });
     }
 
-    req.user = {
-      userId: user._id,
-      role: user.role,
-      region: user.region,
-    };
+    req.user = user;
 
     next();
   } catch (error) {

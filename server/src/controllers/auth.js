@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import AuditLog from "../models/AuditLog.js";
 
 export const register = async (req, res) => {
   try {
@@ -31,24 +32,53 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log("🚀 ~ login ~ password:", password);
-    const user = await User.findOne({ username });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    // Validate input
+    if (!username || !password) {
+      return res
+        .status(400)
+        .json({ error: "Username and password are required" });
+    }
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
     const token = jwt.sign(
-      { userId: user._id, role: user.role, region: user.region },
+      {
+        userId: user._id,
+        role: user.role,
+        region: user.region,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
 
-    res.json({ token });
+    // Return user data without password
+    const userData = user.toObject();
+    // console.log("🚀 ~ login ~ userData:", userData);
+    delete userData.password;
+    await AuditLog.create({
+      action: "login",
+      userId: userData._id,
+      details: `user ${user.username} logged in `,
+    });
+    res.json({
+      token,
+      user: userData,
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("Login error:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
+
 export const getMe = async (req, res) => {
   try {
     // The auth middleware should have already verified the token and set req.user
@@ -56,10 +86,9 @@ export const getMe = async (req, res) => {
       return res.status(401).json({ error: "Not authenticated" });
     }
 
-    // Return user data (excluding sensitive information like password)
     const user = await User.findById(req.user.userId)
-      .select("-password") // Exclude the password field
-      .lean(); // Convert to plain JavaScript object
+      .select("-password -__v")
+      .lean();
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });

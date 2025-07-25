@@ -4,12 +4,12 @@ import { Box, CircularProgress, Alert, Typography } from "@mui/material";
 import AuditLogsTable from "../components/audit/AuditLogsTable";
 import AuditLogsChart from "../components/audit/AuditLogsChart";
 import AuditLogsStats from "../components/audit/AuditLogsStats";
+import { baseUrl } from "../utils/Localization";
 
 const AuditLogs = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const baseURL = "http://localhost:5000";
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -17,7 +17,7 @@ const AuditLogs = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
 
-        const res = await axios.get(`${baseURL}/api/audit`, {
+        const res = await axios.get(`${baseUrl}/api/audit`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

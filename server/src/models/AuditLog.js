@@ -9,7 +9,6 @@ const auditLogSchema = new mongoose.Schema(
       required: true,
     },
     details: { type: String },
-    ipAddress: { type: String },
   },
   {
     timestamps: true,

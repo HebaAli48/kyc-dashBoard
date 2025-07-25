@@ -129,7 +129,6 @@ const AuditLogsTable = ({ logs }) => {
               <TableCell sx={{ fontWeight: 600 }}>Action</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>User</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Details</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>IP Address</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -193,11 +192,6 @@ const AuditLogsTable = ({ logs }) => {
                     }}
                   >
                     {log.details}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2" color="text.secondary">
-                    {log.ipAddress || "N/A"}
                   </Typography>
                 </TableCell>
               </TableRow>

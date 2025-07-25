@@ -17,6 +17,7 @@ import StatsCard from "./StatsCard";
 import RolePieChart from "./RolePieChart";
 import RegionBarChart from "./RegionBarChart";
 import UsersTable from "./UsersTable";
+import { baseUrl } from "../../utils/Localization";
 
 const AllUserManagementComponents = () => {
   const theme = useTheme();
@@ -29,21 +30,38 @@ const AllUserManagementComponents = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const baseURL = "http://localhost:5000";
-
       try {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          throw new Error("No authentication token found");
+        }
+
         const [usersRes, statsRes] = await Promise.all([
-          axios.get(`${baseURL}/api/auth`),
-          axios.get(`${baseURL}/api/auth/stats`),
+          axios.get(`${baseUrl}/api/auth`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          axios.get(`${baseUrl}/api/auth/stats`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
         ]);
+
         setUsers(usersRes.data);
         setStats(statsRes.data);
       } catch (error) {
         console.error("Error fetching data:", error);
+        // Optionally handle the error in your UI
+        setError(error.message);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
 

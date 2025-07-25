@@ -11,6 +11,8 @@ import { Add as AddIcon } from "@mui/icons-material";
 import AnalyticsDashboard from "../components/transactions/AnalyticsDashboard";
 import TransactionsTable from "../components/transactions/TransactionsTable";
 import AddTransactionDialog from "../components/transactions/AddTransactionDialog";
+import useAuthenticate from "../utils/useAuthenticate";
+import { baseUrl } from "../utils/Localization";
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
@@ -26,8 +28,13 @@ const Transactions = () => {
     region: "",
     status: "pending",
   });
-
-  const baseURL = "http://localhost:5000";
+  const {
+    token,
+    isGlobalAdmin,
+    isRegionalAdmin,
+    isSendingPartner,
+    isRecevingPartner,
+  } = useAuthenticate();
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -35,7 +42,7 @@ const Transactions = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
 
-        const res = await axios.get(`${baseURL}/api/transactions`, {
+        const res = await axios.get(`${baseUrl}/api/transactions`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -112,32 +119,34 @@ const Transactions = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
-        <Typography variant="h4">Transactions Dashboard</Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={() => setOpenDialog(true)}
-        >
-          Add Transaction
-        </Button>
+      <Box mb={3}>
+        <Typography variant="h4" pb={5}>
+          {isSendingPartner || isRecevingPartner
+            ? "Transactions "
+            : "Transactions Dashboard"}
+        </Typography>
+        {(isSendingPartner || isRecevingPartner) && (
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenDialog(true)}
+            fullWidth
+          >
+            Add Transaction
+          </Button>
+        )}
       </Box>
-
-      <AnalyticsDashboard transactions={transactions} />
-      <TransactionsTable transactions={transactions} />
+      {(isGlobalAdmin || isRegionalAdmin) && (
+        <>
+          <AnalyticsDashboard transactions={transactions} />
+          <TransactionsTable transactions={transactions} />
+        </>
+      )}
 
       <AddTransactionDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
-        transaction={newTransaction}
-        onInputChange={handleInputChange}
-        onSubmit={handleSubmit}
       />
     </Box>
   );
