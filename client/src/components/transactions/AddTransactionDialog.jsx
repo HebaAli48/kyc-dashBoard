@@ -19,6 +19,7 @@ import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import { useState } from "react";
 import axios from "axios";
 import { baseUrl } from "../../utils/Localization";
+import Toastify from "../Toastify";
 
 const AddTransactionDialog = ({ open, onClose }) => {
   const currencyOptions = [
@@ -78,7 +79,13 @@ const AddTransactionDialog = ({ open, onClose }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
+      console.log("🚀 ~ handleSubmit ~ response:", response);
+      if (response.status === 201) {
+        Toastify(
+          "success",
+          `your  ${response.data.amount} ${response.data.currencyFrom} is placed sucessfully 🥳`
+        );
+      }
       // Reset form and close dialog
       setTransaction({
         amount: "",

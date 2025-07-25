@@ -13,7 +13,7 @@ const useAuthenticate = () => {
 
   useEffect(() => {
     const role = localStorage.getItem("role");
-    console.log("🚀 ~ useAuthenticate ~ role:", role);
+    // console.log("🚀 ~ useAuthenticate ~ role:", role);
 
     if (role) {
       // Set individual states based on the role

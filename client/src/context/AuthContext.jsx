@@ -14,7 +14,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [authState, setAuthState] = useState({
     user: null,
-    loading: true,
+    loading: false, // Changed initial loading to false
     error: null,
   });
 
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     );
 
     return instance;
-  }, []); // Empty dependency array ensures this only runs once
+  }, []);
 
   const checkAuth = useCallback(async () => {
     const token = localStorage.getItem("token");
@@ -79,28 +79,24 @@ export const AuthProvider = ({ children }) => {
         error: err.response?.data?.error || "Authentication failed",
       });
     }
-  }, [api]); // Only depends on api which is now stable
-
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+  }, [api]);
 
   const login = async (credentials) => {
     try {
       setAuthState((prev) => ({ ...prev, loading: true, error: null }));
 
-      const { data } = await api.post("/api/auth/login", credentials);
+      const response = await api.post("/api/auth/login", credentials);
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.user.role);
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("role", response.data.user.role);
 
       setAuthState({
-        user: data.user,
+        user: response.data.user,
         loading: false,
         error: null,
       });
 
-      return data.user;
+      return response;
     } catch (err) {
       const errorMessage = err.response?.data?.error || "Login failed";
       setAuthState((prev) => ({
@@ -115,7 +111,6 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
-    // localStorage.removeItem("userData");
     setAuthState({
       user: null,
       loading: false,
@@ -123,7 +118,6 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  // Memoize the context value to prevent unnecessary re-renders
   const contextValue = useMemo(
     () => ({
       ...authState,

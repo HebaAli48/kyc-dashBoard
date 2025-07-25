@@ -96,7 +96,7 @@ async function getConversionRate(from, to) {
 
 export const getTransactions = async (req, res) => {
   try {
-    const transactions = await Transaction.find();
+    const transactions = await Transaction.find().sort({ createdAt: -1 }); // descending order (latest first)
     res.json(transactions);
   } catch (error) {
     res.status(500).json({ error: error.message });

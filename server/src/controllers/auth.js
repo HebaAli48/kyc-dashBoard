@@ -42,12 +42,16 @@ export const login = async (req, res) => {
 
     const user = await User.findOne({ username });
     if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res
+        .status(401)
+        .json({ error: "username or password is wrong , plz try again" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res
+        .status(401)
+        .json({ error: "username or password is wrong , plz try again" });
     }
 
     const token = jwt.sign(
@@ -69,7 +73,7 @@ export const login = async (req, res) => {
       userId: userData._id,
       details: `user ${user.username} logged in `,
     });
-    res.json({
+    res.status(200).json({
       token,
       user: userData,
     });

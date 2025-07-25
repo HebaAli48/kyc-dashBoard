@@ -21,6 +21,7 @@ import {
   Person as PersonIcon,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
+import Toastify from "../Toastify";
 
 const LoginForm = () => {
   const [username, setUsername] = useState("");
@@ -42,11 +43,16 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      await login({ username, password });
+      const response = await login({ username, password });
+      // console.log("🚀 ~ handleSubmit ~ response:", response);
+      if (response.status === 200) {
+        Toastify("success", `Hello ${response.data.user.username} 🖐🏻🖐🏻`);
+      }
+
       navigate("/");
     } catch (error) {
       setError(
-        error.response?.data?.message ||
+        error.response?.data?.error ||
           error.message ||
           "Login failed. Please try again."
       );
