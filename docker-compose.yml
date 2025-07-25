@@ -1,0 +1,48 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:5.0
+    container_name: kyc_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: kyc_server
+    ports:
+      - "5000:5000"
+    environment:
+      MONGO_URI: mongodb://root:example@mongo:27017/admin
+      JWT_SECRET: your_jwt_secret_here
+    depends_on:
+      - mongo
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: kyc_client
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:5000
+    depends_on:
+      - server
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+
+volumes:
+  mongo_data:
