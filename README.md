@@ -284,37 +284,35 @@ This is a full-stack KYC (Know Your Customer) Dashboard application, designed to
 
 ---
 
-### ⚙️ Technologies Used
+### 🧠 Used Technologies
 
-#### Backend
+#### 🖥️ Backend
 
-Node.js — JavaScript runtime
-Express.js — Web framework
-MongoDB — NoSQL database
-Mongoose — MongoDB ODM
-bcryptjs — Password hashing
-jsonwebtoken — JWT-based authentication
-dotenv — Environment variables
-helmet — Security middleware
-cors — Cross-Origin Resource Sharing
-express-rate-limit — Rate limiting middleware
-morgan — HTTP request logger
-nodemon — Development tool for auto-restarting server
-
----
-
-#### Frontend
-
-React — JavaScript library for building UIs
-Vite — Next-generation frontend tooling
-React Router DOM — Routing library for React
-MUI (Material-UI) — UI component library
-Emotion — CSS-in-JS styling solution
-Framer Motion — Animation library
-Recharts — Charting library for React
-Axios — HTTP client
+- **Node.js** — JavaScript runtime
+- **Express.js** — Web framework
+- **MongoDB** — NoSQL database
+- **Mongoose** — MongoDB ODM
+- **bcryptjs** — Password hashing
+- **jsonwebtoken** — JWT-based authentication
+- **dotenv** — Environment variables
+- **helmet** — Security middleware
+- **cors** — Cross-Origin Resource Sharing
+- **express-rate-limit** — Rate limiting middleware
+- **morgan** — HTTP request logger
+- **nodemon** — Development tool for auto-restarting the server
 
 ---
+
+#### 🌐 Frontend
+
+- **React** — JavaScript library for building UIs
+- **Vite** — Next-generation frontend tooling
+- **React Router DOM** — Routing library for React
+- **MUI (Material-UI)** — UI component library
+- **Emotion** — CSS-in-JS styling solution
+- **Framer Motion** — Animation library
+- **Recharts** — Charting library for React
+- **Axios** — HTTP client
 
 ### Installation
 
