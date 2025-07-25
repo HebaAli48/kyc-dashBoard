@@ -274,8 +274,6 @@ const lastUpdated = logs[0]?.createdAt;
 <img width="1574" height="753" alt="Image" src="https://github.com/user-attachments/assets/fa7f42d4-8a36-46f4-98f4-059ce96d3cb9" />
 <img width="1900" height="789" alt="Image" src="https://github.com/user-attachments/assets/b3de469c-0404-494d-a631-ea85960f6fdd" />
 <img width="1898" height="801" alt="Image" src="https://github.com/user-attachments/assets/7eaefdf5-deb3-423b-b49f-b51bc0c45379" />
-> ![Dashboard Screenshot](./screenshot.png)
-
 ---
 
 # KYC Dashboard
