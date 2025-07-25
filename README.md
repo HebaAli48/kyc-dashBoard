@@ -31,17 +31,16 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
   Supports 4 user roles:
 
   - `Global Admin`: Full visibility and control across all regions.
-  - `Regional Admin`: Manages data within their assigned region only.
+  - `Regional Admin`: Manages data within their assigned region only .
   - `Sending Partner`: Access to sent transaction and limited logs.
   - `Receiving Partner`: Access to incoming transaction data.
 
-- 🔄 **Real-Time Audit Logging**
-  Every user action is logged to the database with:
-
-  - `user`
-  - `action`
-  - `timestamp`
-  - `status`
+  - `Senders and Receivers`
+    - Can perform transactions
+  - `Admins (Global/Regional)`
+    - View Users Dashboard
+    - View Transactions Dashboard
+    - View Audit Logs Dashboard
 
 - 📦 **Transaction Module**
   View and manage all transaction-related data including amount, status, region, timestamps, and type (USD ↔ USDC).
@@ -55,6 +54,29 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
 
 - 📊 **Visual Graphs & Analytics**
   Integrated charts (bar, pie, line) to summarize activity, regional usage, transaction distribution, and volume trends.
+
+- 🔐 **Authentication & Authorization**
+
+  - JWT-based login and protected routes
+  - Password hashing with bcrypt
+  - Role-based access (Admin, Sender, Receiver)
+
+- 📊 **Dashboards**
+
+  - Role-specific dashboards:
+  - Admin: Access all dashboards (Users, Transactions, Audit Logs)
+  - Sender/Receiver: Access limited dashboard with transaction capabilities
+
+- 🔔 **Notifications & UX**
+  react-toastify for toast notifications (login success, transaction done, errors)
+
+- 🛡️ **Real-Time Audit Logging**
+
+  - Logs user actions such as login, transactions, etc.
+  - Each log includes:
+  - Who performed the action `user`
+  - What action occurred `action`
+  - When it happened `timestamp`
 
 - 📁 **Dynamic, Paginated Tables**
   Tables support:
@@ -103,14 +125,6 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
   - Live reload using `nodemon`
   - ESLint + Prettier for linting and formatting
   - `.env` support for API keys and secrets
-
----
-
-## 📦 Tech Stack
-
-- **React 18**
-- **Material-UI (v5)**
-- **Recharts** – for chart rendering
 
 ---
 
@@ -185,53 +199,10 @@ kyc-dashboard/
 ├── docker-compose.yml
 ```
 
-## 🧩 Components Overview
-
-### `StatusPieChart.jsx`
-
-Renders a pie chart showing the breakdown of different transaction statuses (e.g., `completed`, `pending`, `rejected`).
-
-```jsx
-<Pie
-  data={pieData}
-  cx="50%"
-  cy="50%"
-  outerRadius={100}
-  fill="#8884d8"
-  dataKey="value"
-  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-/>
-```
-
-Colors:
-
-- ✅ Completed: `#4CAF50`
-- ⏳ Pending: `#FFC107`
-- ❌ Rejected: `#F44336`
-
----
-
-### `StatCard.jsx`
-
-Reusable card component to display:
-
-- Total Logs
-- Users with Actions
-- Last Updated Date
-
-```jsx
-<StatCard title="Total Logs" value={totalLogs} color="primary" />
-<StatCard title="Users with Actions" value={usersWithActions} color="secondary" />
-```
-
----
-
-### `KycDashboard.jsx`
-
 Main component that:
 
 - Processes `logs` data
-- Extracts unique users
+- Extracts Active users
 - Renders `StatCard` and `StatusPieChart`
 
 #### Props:
@@ -259,7 +230,6 @@ const lastUpdated = logs[0]?.createdAt;
 ---
 
 ## 🖼 Screenshot
-  
 
 <img width="1900" height="792" alt="Image" src="https://github.com/user-attachments/assets/7d394b9c-79c0-4029-99c5-8a868cdd6d91" />
 <img width="670" height="796" alt="Image" src="https://github.com/user-attachments/assets/8f968f81-8349-4d95-9763-a683dbb3c47e" />
@@ -323,6 +293,7 @@ This is a full-stack KYC (Know Your Customer) Dashboard application, designed to
 - **Framer Motion** — Animation library
 - **Recharts** — Charting library for React
 - **Axios** — HTTP client
+- **react-toastify** — Notification library for toast messages
 
 ### Installation
 
