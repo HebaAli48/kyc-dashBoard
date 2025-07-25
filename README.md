@@ -259,9 +259,21 @@ const lastUpdated = logs[0]?.createdAt;
 ---
 
 ## 🖼 Screenshot
+  
 
-> _[Add a screenshot of your dashboard UI here]_  
-> Example:  
+<img width="1900" height="792" alt="Image" src="https://github.com/user-attachments/assets/7d394b9c-79c0-4029-99c5-8a868cdd6d91" />
+<img width="670" height="796" alt="Image" src="https://github.com/user-attachments/assets/8f968f81-8349-4d95-9763-a683dbb3c47e" />
+<img width="1915" height="800" alt="Image" src="https://github.com/user-attachments/assets/8677a3c7-e0c7-4570-813c-56381b97f7c0" />
+<img width="1916" height="793" alt="Image" src="https://github.com/user-attachments/assets/acd0e1a7-bc26-4951-b91d-7406a3dd6af4" />
+<img width="1910" height="926" alt="Image" src="https://github.com/user-attachments/assets/09c52adb-b753-45d4-820f-110ea2595e9b" />
+<img width="1907" height="925" alt="Image" src="https://github.com/user-attachments/assets/7f1f5df8-bae0-4e05-8856-f2beba3b949b" />
+<img width="1901" height="802" alt="Image" src="https://github.com/user-attachments/assets/4dbc7421-54c5-4ea1-87a6-0d3904be43e2" />
+<img width="1899" height="800" alt="Image" src="https://github.com/user-attachments/assets/e56e1a93-f261-4398-812b-c4587d453ea2" />
+<img width="1899" height="794" alt="Image" src="https://github.com/user-attachments/assets/0bc51e1d-32de-402f-8850-c5b329fd7058" />
+<img width="1575" height="793" alt="Image" src="https://github.com/user-attachments/assets/92240369-a817-4f8c-bec3-9c659d0b7028" />
+<img width="1574" height="753" alt="Image" src="https://github.com/user-attachments/assets/fa7f42d4-8a36-46f4-98f4-059ce96d3cb9" />
+<img width="1900" height="789" alt="Image" src="https://github.com/user-attachments/assets/b3de469c-0404-494d-a631-ea85960f6fdd" />
+<img width="1898" height="801" alt="Image" src="https://github.com/user-attachments/assets/7eaefdf5-deb3-423b-b49f-b51bc0c45379" />
 > ![Dashboard Screenshot](./screenshot.png)
 
 ---
