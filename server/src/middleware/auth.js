@@ -3,7 +3,18 @@ import User from "../models/User.js";
 
 export const authenticate = async (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
+    // Get the authorization header
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(401)
+        .json({ error: "No token provided or malformed token" });
+    }
+
+    // Extract token (remove "Bearer " prefix)
+    const token = authHeader.split(" ")[1];
+    // console.log("🚀 ~ authenticate ~ token:", token);
 
     if (!token) {
       return res.status(401).json({ error: "No token provided" });
@@ -17,11 +28,18 @@ export const authenticate = async (req, res, next) => {
     }
 
     req.user = user;
-
     next();
   } catch (error) {
     console.error("Authentication error:", error);
-    res.status(401).json({ error: "Invalid or expired token" });
+
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ error: "Token expired" });
+    }
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    res.status(401).json({ error: "Authentication failed" });
   }
 };
 

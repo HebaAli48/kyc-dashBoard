@@ -1,9 +1,14 @@
 import { Typography, Box, Paper, Avatar, Grid } from "@mui/material";
-import { useAuth } from "../context/AuthContext";
 import { CheckCircleOutline, Assignment, Security } from "@mui/icons-material";
+import { getMe } from "../apis/userApi";
+import { useSelector, useDispatch } from "react-redux";
+import { setLoading } from "../store/slices/loadingSlice";
+import { useContext, useEffect } from "react";
+import { userContext } from "../utils/ContextApis"; // Make sure this path is correct
+import Loading from "../components/Loading";
 
 const Home = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useContext(userContext);
 
   return (
     <Box sx={{ p: 3, maxWidth: 1200, margin: "0 auto" }}>

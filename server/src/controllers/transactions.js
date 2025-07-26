@@ -96,9 +96,25 @@ async function getConversionRate(from, to) {
 
 export const getTransactions = async (req, res) => {
   try {
-    const transactions = await Transaction.find().sort({ createdAt: -1 }); // descending order (latest first)
+    // Validate user exists in request
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // Create base query
+    const query =
+      req.user.region === "global" ? {} : { region: req.user.region };
+
+    // Execute query with sorting
+    const transactions = await Transaction.find(query)
+      .sort({ createdAt: -1 }) // Newest first
+      .lean(); // Convert to plain JS objects for better performance
+
     res.json(transactions);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({
+      error: "Failed to fetch transactions",
+    });
   }
 };

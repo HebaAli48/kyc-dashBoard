@@ -22,6 +22,7 @@ const AuditLogs = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        console.log("🚀 ~ fetchLogs ~ res:", res);
 
         setLogs(Array.isArray(res.data) ? res.data : []);
       } catch (error) {

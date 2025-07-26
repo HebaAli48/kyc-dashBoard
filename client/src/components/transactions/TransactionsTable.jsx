@@ -12,15 +12,25 @@ import {
   TableFooter,
   useTheme,
   IconButton,
+  TextField,
+  InputAdornment,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Chip,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { fadeIn, staggerContainer } from "../../utils/motion"; // Custom animation variants
+import { fadeIn, staggerContainer } from "../../utils/motion";
 import {
   LastPage,
   FirstPage,
   KeyboardArrowLeft,
   KeyboardArrowRight,
+  Search,
+  FilterList,
+  Clear,
 } from "@mui/icons-material";
 
 function TablePaginationActions(props) {
@@ -94,6 +104,11 @@ const TransactionsTable = ({ transactions }) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const theme = useTheme();
 
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [regionFilter, setRegionFilter] = useState("all");
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -103,8 +118,56 @@ const TransactionsTable = ({ transactions }) => {
     setPage(0);
   };
 
+  // Get unique regions and statuses for filter options
+  const uniqueRegions = useMemo(() => {
+    const regions = new Set();
+    transactions.forEach((t) => t.region && regions.add(t.region));
+    return Array.from(regions);
+  }, [transactions]);
+
+  const uniqueStatuses = useMemo(() => {
+    const statuses = new Set();
+    transactions.forEach((t) => t.status && statuses.add(t.status));
+    return Array.from(statuses);
+  }, [transactions]);
+
+  // Filter transactions based on search and filters
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((transaction) => {
+      // Search term filter
+      const matchesSearch =
+        searchTerm === "" ||
+        transaction.sender?.username
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        transaction.receiver?.username
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        transaction.amount.toString().includes(searchTerm);
+
+      // Status filter
+      const matchesStatus =
+        statusFilter === "all" || transaction.status === statusFilter;
+
+      // Region filter
+      const matchesRegion =
+        regionFilter === "all" || transaction.region === regionFilter;
+
+      return matchesSearch && matchesStatus && matchesRegion;
+    });
+  }, [transactions, searchTerm, statusFilter, regionFilter]);
+
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - transactions.length) : 0;
+    page > 0
+      ? Math.max(0, (1 + page) * rowsPerPage - filteredTransactions.length)
+      : 0;
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setRegionFilter("all");
+    setPage(0);
+  };
 
   return (
     <motion.div
@@ -113,6 +176,108 @@ const TransactionsTable = ({ transactions }) => {
       animate="show"
       style={{ width: "100%" }}
     >
+      {/* Filter Controls */}
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 2,
+          mb: 3,
+          alignItems: "center",
+        }}
+      >
+        <TextField
+          variant="outlined"
+          size="small"
+          placeholder="Search transactions..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPage(0);
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search />
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            flexGrow: 1,
+            maxWidth: 400,
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2,
+            },
+          }}
+        />
+
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Status</InputLabel>
+          <Select
+            value={statusFilter}
+            label="Status"
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(0);
+            }}
+            sx={{ borderRadius: 2 }}
+          >
+            <MenuItem value="all">All Statuses</MenuItem>
+            {uniqueStatuses.map((status) => (
+              <MenuItem key={status} value={status}>
+                {status}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Region</InputLabel>
+          <Select
+            value={regionFilter}
+            label="Region"
+            onChange={(e) => {
+              setRegionFilter(e.target.value);
+              setPage(0);
+            }}
+            sx={{ borderRadius: 2 }}
+          >
+            <MenuItem value="all">All Regions</MenuItem>
+            {uniqueRegions.map((region) => (
+              <MenuItem key={region} value={region}>
+                {region.replace("_", " ")}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {(searchTerm !== "" ||
+          statusFilter !== "all" ||
+          regionFilter !== "all") && (
+          <Chip
+            label="Clear filters"
+            onClick={handleClearFilters}
+            onDelete={handleClearFilters}
+            deleteIcon={<Clear />}
+            variant="outlined"
+            sx={{
+              borderRadius: 2,
+              borderColor: theme.palette.divider,
+              "& .MuiChip-deleteIcon": {
+                color: theme.palette.text.secondary,
+              },
+            }}
+          />
+        )}
+
+        <Box sx={{ display: "flex", alignItems: "center", ml: "auto" }}>
+          <FilterList color="action" sx={{ mr: 1 }} />
+          <Typography variant="caption" color="text.secondary">
+            {filteredTransactions.length} results
+          </Typography>
+        </Box>
+      </Box>
+
       <TableContainer
         component={Paper}
         elevation={0}
@@ -137,16 +302,18 @@ const TransactionsTable = ({ transactions }) => {
           </TableHead>
           <TableBody>
             {(rowsPerPage > 0
-              ? transactions.slice(
+              ? filteredTransactions.slice(
                   page * rowsPerPage,
                   page * rowsPerPage + rowsPerPage
                 )
-              : transactions
+              : filteredTransactions
             ).map((transaction, index) => (
-              <motion.tr
+              <TableRow
                 key={transaction._id}
+                component={motion.tr}
                 variants={fadeIn("up", "spring", index * 0.1, 0.5)}
-                component={motion(TableRow)}
+                initial="hidden"
+                animate="show"
                 whileHover={{ backgroundColor: theme.palette.action.hover }}
                 transition={{ duration: 0.2 }}
               >
@@ -194,8 +361,8 @@ const TransactionsTable = ({ transactions }) => {
                       borderRadius: 1,
                       display: "inline-flex",
                       alignItems: "center",
-                      justifyContent: "center", // Center text horizontally
-                      minWidth: 100, // Set a fixed minimum width
+                      justifyContent: "center",
+                      minWidth: 100,
                       fontWeight: 600,
                       textTransform: "capitalize",
                       letterSpacing: 0.5,
@@ -232,7 +399,7 @@ const TransactionsTable = ({ transactions }) => {
                     </Typography>
                   </Box>
                 </TableCell>
-              </motion.tr>
+              </TableRow>
             ))}
 
             {emptyRows > 0 && (
@@ -241,7 +408,7 @@ const TransactionsTable = ({ transactions }) => {
               </TableRow>
             )}
 
-            {transactions.length === 0 && (
+            {filteredTransactions.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                   <Typography variant="body1" color="text.secondary">
@@ -256,7 +423,7 @@ const TransactionsTable = ({ transactions }) => {
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
                 colSpan={6}
-                count={transactions.length}
+                count={filteredTransactions.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 SelectProps={{

@@ -86,19 +86,21 @@ export const login = async (req, res) => {
 export const getMe = async (req, res) => {
   try {
     // The auth middleware should have already verified the token and set req.user
+    // console.log("🚀 ~ getMe ~ req.user:", req.user);
     if (!req.user) {
       return res.status(401).json({ error: "Not authenticated" });
     }
 
-    const user = await User.findById(req.user.userId)
+    const user = await User.findById(req.user.id)
       .select("-password -__v")
       .lean();
+    // console.log("🚀 ~ getMe ~ user:", user);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.json(user);
+    res.json({ user });
   } catch (error) {
     console.error("Error in getMe:", error);
     res.status(500).json({ error: "Internal server error" });

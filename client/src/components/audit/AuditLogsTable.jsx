@@ -12,8 +12,17 @@ import {
   TableFooter,
   useTheme,
   IconButton,
+  TextField,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  Button,
+  Chip,
+  Grid,
+  InputAdornment,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { fadeIn, staggerContainer } from "../../utils/motion";
 import {
@@ -21,6 +30,9 @@ import {
   FirstPage,
   KeyboardArrowLeft,
   KeyboardArrowRight,
+  Search,
+  FilterList,
+  Clear,
 } from "@mui/icons-material";
 
 function TablePaginationActions(props) {
@@ -92,7 +104,28 @@ function TablePaginationActions(props) {
 const AuditLogsTable = ({ logs }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [actionFilter, setActionFilter] = useState("all");
+  const [appliedFilters, setAppliedFilters] = useState([]);
   const theme = useTheme();
+
+  // Extract unique actions for filter options
+  const uniqueActions = [...new Set(logs.map((log) => log.action))];
+
+  // Filter logs based on search and action filter
+  const filteredLogs = logs.filter((log) => {
+    const matchesSearch =
+      searchTerm === "" ||
+      log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (log.details &&
+        log.details.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (log.user?.username &&
+        log.user.username.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const matchesAction = actionFilter === "all" || log.action === actionFilter;
+
+    return matchesSearch && matchesAction;
+  });
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -103,8 +136,43 @@ const AuditLogsTable = ({ logs }) => {
     setPage(0);
   };
 
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    setPage(0);
+  };
+
+  const handleActionFilterChange = (event) => {
+    setActionFilter(event.target.value);
+    setPage(0);
+  };
+
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setActionFilter("all");
+    setPage(0);
+  };
+
+  const removeFilter = (filterType) => {
+    if (filterType === "search") {
+      setSearchTerm("");
+    } else if (filterType === "action") {
+      setActionFilter("all");
+    }
+    setPage(0);
+  };
+
+  // Update applied filters display
+  useEffect(() => {
+    const filters = [];
+    if (searchTerm)
+      filters.push({ type: "search", label: `Search: "${searchTerm}"` });
+    if (actionFilter !== "all")
+      filters.push({ type: "action", label: `Action: ${actionFilter}` });
+    setAppliedFilters(filters);
+  }, [searchTerm, actionFilter]);
+
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - logs.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - filteredLogs.length) : 0;
 
   return (
     <motion.div
@@ -113,6 +181,90 @@ const AuditLogsTable = ({ logs }) => {
       animate="show"
       style={{ width: "100%", marginTop: "50px" }}
     >
+      {/* Filter Controls */}
+      <Box sx={{ mb: 3 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2,
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 2,
+          }}
+        >
+          <Grid container spacing={2} alignItems="center">
+            {/* Search Bar */}
+            <Grid item xs={12} md={8}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Search logs by action, details, or user..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search />
+                    </InputAdornment>
+                  ),
+                }}
+                size="small"
+              />
+            </Grid>
+
+            {/* Action Filter */}
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Action</InputLabel>
+                <Select
+                  value={actionFilter}
+                  onChange={handleActionFilterChange}
+                  label="Action"
+                >
+                  <MenuItem value="all">All Actions</MenuItem>
+                  {uniqueActions.map((action) => (
+                    <MenuItem key={action} value={action}>
+                      {action}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+
+          {/* Applied Filters */}
+          {appliedFilters.length > 0 && (
+            <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
+              <FilterList color="action" />
+              <Typography variant="body2" color="text.secondary">
+                Filters:
+              </Typography>
+              {appliedFilters.map((filter, index) => (
+                <Chip
+                  key={index}
+                  label={filter.label}
+                  size="small"
+                  onDelete={() => removeFilter(filter.type)}
+                />
+              ))}
+              <Button
+                startIcon={<Clear />}
+                onClick={clearAllFilters}
+                size="small"
+                sx={{ ml: "auto" }}
+              >
+                Clear All
+              </Button>
+            </Box>
+          )}
+        </Paper>
+      </Box>
+
+      {/* Results Count */}
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        Showing {filteredLogs.length} of {logs.length} logs
+      </Typography>
+
+      {/* Table */}
       <TableContainer
         component={Paper}
         elevation={0}
@@ -125,7 +277,7 @@ const AuditLogsTable = ({ logs }) => {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: theme.palette.background.paper }}>
-              <TableCell sx={{ fontWeight: 600 }}>Timestamp</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Action</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>User</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Details</TableCell>
@@ -133,8 +285,11 @@ const AuditLogsTable = ({ logs }) => {
           </TableHead>
           <TableBody>
             {(rowsPerPage > 0
-              ? logs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              : logs
+              ? filteredLogs.slice(
+                  page * rowsPerPage,
+                  page * rowsPerPage + rowsPerPage
+                )
+              : filteredLogs
             ).map((log, index) => (
               <TableRow
                 key={log._id}
@@ -203,11 +358,11 @@ const AuditLogsTable = ({ logs }) => {
               </TableRow>
             )}
 
-            {logs.length === 0 && (
+            {filteredLogs.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
                   <Typography variant="body1" color="text.secondary">
-                    No audit logs found
+                    No audit logs match your filters
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -218,7 +373,7 @@ const AuditLogsTable = ({ logs }) => {
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
                 colSpan={5}
-                count={logs.length}
+                count={filteredLogs.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 SelectProps={{

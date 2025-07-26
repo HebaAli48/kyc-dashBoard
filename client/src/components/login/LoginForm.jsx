@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useContext, useState } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import {
   Box,
@@ -22,6 +21,10 @@ import {
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import Toastify from "../Toastify";
+import { loginUser } from "../../apis/userApi";
+import { useDispatch } from "react-redux";
+import { login } from "../../store/slices/authSlice";
+import { userContext } from "../../utils/ContextApis";
 
 const LoginForm = () => {
   const [username, setUsername] = useState("");
@@ -29,8 +32,9 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // Correctly placed at the top level
+  const { user, setUser } = useContext(userContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,13 +47,15 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await login({ username, password });
-      // console.log("🚀 ~ handleSubmit ~ response:", response);
-      if (response.status === 200) {
-        Toastify("success", `Hello ${response.data.user.username} 🖐🏻🖐🏻`);
-      }
+      const response = await loginUser({ username, password });
+      if (response.status == 200) {
+        const { token, user } = response.data;
+        dispatch(login({ token, user })); // Fixed: Using the already declared dispatch
+        setUser(response.data.user);
 
-      navigate("/");
+        Toastify("success", `Hello ${response.data.user.username} 🖐🏻🖐🏻`);
+        navigate("/");
+      }
     } catch (error) {
       setError(
         error.response?.data?.error ||

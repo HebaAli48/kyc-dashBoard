@@ -76,14 +76,14 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
   - Each log includes:
   - Who performed the action `user`
   - What action occurred `action`
-  - When it happened `timestamp`
+  - When it happened `Date`
+  - about action in details `Details`
 
 - 📁 **Dynamic, Paginated Tables**
   Tables support:
 
-  - Server-side pagination
+  - pagination
   - Search and filters (by user, date range, role, region)
-  - Custom sorting (by date, actions, status)
 
 - 🔍 **Advanced Filter & Search**
   Robust client-side filtering and real-time search for logs and users by:
@@ -123,7 +123,6 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
 - 👨‍💻 **Developer Tools**
 
   - Live reload using `nodemon`
-  - ESLint + Prettier for linting and formatting
   - `.env` support for API keys and secrets
 
 ---

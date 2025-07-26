@@ -16,7 +16,6 @@ import {
   Avatar,
 } from "@mui/material";
 import { Outlet, useNavigate, Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -24,8 +23,13 @@ import PaidIcon from "@mui/icons-material/Paid";
 import PeopleIcon from "@mui/icons-material/People";
 import SettingsIcon from "@mui/icons-material/Settings";
 import HomeIcon from "@mui/icons-material/Home";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import useAuthenticate from "../utils/useAuthenticate";
+import { logout } from "../store/slices/authSlice";
+import { setLoading } from "../store/slices/loadingSlice";
+import { useSelector, useDispatch } from "react-redux"; // Added useDispatch
+import { userContext } from "../utils/ContextApis";
+import { getMe } from "../apis/userApi";
 
 const drawerWidth = 260;
 
@@ -57,10 +61,10 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
 }));
 
 const DashboardLayout = () => {
-  const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+  const dispatch = useDispatch(); // Added dispatch
   const {
     token,
     isGlobalAdmin,
@@ -68,32 +72,29 @@ const DashboardLayout = () => {
     isSendingPartner,
     isRecevingPartner,
   } = useAuthenticate();
-  // Debugging effect - remove in production
-  // useEffect(() => {
-  //   console.log("Current user role:", user?.role);
-  //   console.log("User object:", user);
-  // }, [user]);
+  const isLoading = useSelector((state) => state.loading.isLoading);
+  const { user, setUser } = useContext(userContext);
 
-  if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="100vh"
-      >
-        <CircularProgress size={60} thickness={4} />
-      </Box>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+  const fetchUserData = async () => {
+    try {
+      dispatch(setLoading(true)); // Dispatch loading state
+      const response = await getMe();
+      // console.log("🚀 ~ fetchUserData ~ response:", response.data.user);
+      setUser(response.data.user);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setUser(null);
+    } finally {
+      dispatch(setLoading(false)); // Dispatch loading state
+    }
+  };
+  useEffect(() => {
+    fetchUserData();
+  }, []); // Empty dependency array to run only once on mount
 
   const handleLogout = async () => {
     try {
-      await logout();
+      dispatch(logout()); // Dispatch the logout action
       navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -122,17 +123,17 @@ const DashboardLayout = () => {
               fontSize: "1.5rem",
             }}
           >
-            {user.username.charAt(0).toUpperCase()}
+            {user?.username?.charAt(0).toUpperCase()}
           </Avatar>
           <Typography variant="h6" noWrap>
-            {user.username}
+            {user?.username}
           </Typography>
           <Typography
             variant="subtitle2"
             color="text.secondary"
             sx={{ mt: 0.5 }}
           >
-            {user.role} • {user.region}
+            {user?.role} • {user?.region}
           </Typography>
         </Box>
 
