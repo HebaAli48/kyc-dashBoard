@@ -16,16 +16,17 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
 ## 📊 Features
 
 - ✅ **Total number of user actions** (`Total Logs`)
-  Displays the total number of events recorded in the audit system.
+- Displays the total number of events recorded in the audit system.
 
 - 👥 **Users with Actions** (`Unique Users`)
-  Number of distinct users who have triggered logged events.
+
+  - Number of distinct users who have triggered logged events.
 
 - 📆 **Last Update Timestamp**
   Shows the most recent time a user action occurred.
 
 - 🥧 **Status Pie Chart**
-  Real-time visualization of user activity status using a pie chart with percentage labels and a colored legend.
+- Real-time visualization of user activity status using a pie chart with percentage labels and a colored legend.
 
 - 🌍 **Role-Based Access Control (RBAC)**
   Supports 4 user roles:
@@ -43,17 +44,19 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
     - View Audit Logs Dashboard
 
 - 📦 **Transaction Module**
-  View and manage all transaction-related data including amount, status, region, timestamps, and type (USD ↔ USDC).
+- View and manage all transaction-related data including amount, status, region, timestamps, and type (USD ↔ USDC).
 
 - 💹 **Cybrid Mock API Integration**
-  Fetch real-time exchange rate for USD/USDC:
+
+  - Fetch real-time exchange rate for USD/USDC:
 
   ```http
   GET /rates?from=USD&to=USDC → { rate: 1.0 }
   ```
 
 - 📊 **Visual Graphs & Analytics**
-  Integrated charts (bar, pie, line) to summarize activity, regional usage, transaction distribution, and volume trends.
+
+  - Integrated charts (bar, pie, line) to summarize activity, regional usage, transaction distribution, and volume trends.
 
 - 🔐 **Authentication & Authorization**
 
@@ -68,7 +71,8 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
   - Sender/Receiver: Access limited dashboard with transaction capabilities
 
 - 🔔 **Notifications & UX**
-  react-toastify for toast notifications (login success, transaction done, errors)
+
+  - react-toastify for toast notifications (login success, transaction done, errors)
 
 - 🛡️ **Real-Time Audit Logging**
 
@@ -86,7 +90,8 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
   - Search and filters (by user, date range, role, region)
 
 - 🔍 **Advanced Filter & Search**
-  Robust client-side filtering and real-time search for logs and users by:
+
+  - Robust client-side filtering and real-time search for logs and users by:
 
   - Region
   - Role
@@ -100,7 +105,8 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
   - HTTP headers hardened using `helmet`
 
 - ⚙️ **Seed Database on App Startup**
-  Automatically seeds a mock dataset on first launch for quick testing, including:
+
+  - Automatically seeds a mock dataset on first launch for quick testing, including:
 
   - Users by role
   - Regions
@@ -108,7 +114,8 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
   - Audit logs
 
 - 🐳 **Docker-Compose Support**
-  One-command startup using Docker Compose:
+
+  - One-command startup using Docker Compose:
 
   ```bash
   docker-compose up --build
@@ -198,36 +205,6 @@ kyc-dashboard/
 ├── docker-compose.yml
 ```
 
-Main component that:
-
-- Processes `logs` data
-- Extracts Active users
-- Renders `StatCard` and `StatusPieChart`
-
-#### Props:
-
-```js
-logs = [
-  {
-    user: { _id: 'user123', name: 'John' },
-    status: 'completed',
-    createdAt: '2024-07-24T10:15:30Z',
-    ...
-  },
-  ...
-]
-```
-
-#### Derived Stats:
-
-```js
-const totalLogs = logs.length;
-const usersWithActions = new Set(logs.map((log) => log.user?._id)).size;
-const lastUpdated = logs[0]?.createdAt;
-```
-
----
-
 ## 🖼 Screenshot
 
 <img width="1900" height="792" alt="Image" src="https://github.com/user-attachments/assets/7d394b9c-79c0-4029-99c5-8a868cdd6d91" />
@@ -293,6 +270,7 @@ This is a full-stack KYC (Know Your Customer) Dashboard application, designed to
 - **Recharts** — Charting library for React
 - **Axios** — HTTP client
 - **react-toastify** — Notification library for toast messages
+- **redux** — State management Library
 
 ### Installation
 
