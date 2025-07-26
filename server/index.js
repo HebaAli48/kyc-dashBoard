@@ -19,7 +19,7 @@ app.use(helmet());
 
 // Update your CORS configuration
 const corsOptions = {
-  origin: "http://localhost:5173", // Your frontend origin
+  origin: "*", // Allows all origins
   credentials: true, // Allow credentials
   optionsSuccessStatus: 200, // For legacy browser support
 };

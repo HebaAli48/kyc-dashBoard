@@ -1,20 +1,49 @@
 version: "3.8"
 
 services:
+  kyc_mongo:
+    image: mongo:4.4
+    container_name: kyc_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - kyc_mongo_data:/data/db
+    networks:
+      - kyc_net
+
+  kyc_redis:
+    image: redis:alpine
+    container_name: kyc_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass yourredispassword
+    volumes:
+      - kyc_redis_data:/data
+    networks:
+      - kyc_net
+
   kyc_server:
     build:
       context: ./server
     container_name: kyc_server
     restart: always
     ports:
-      - "8000:8000"
+      - "5000:5000"
     environment:
       NODE_ENV: production
-      MONGO_URI: mongodb://root:example@kyc_mongo:27017/kyc_db?authSource=admin
+      MONGO_URI: "mongodb://root:example@kyc_mongo:27017/kyc_db?authSource=admin"
       JWT_SECRET: your_jwt_secret_here
-      REDIS_HOST: kyc_redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: yourredispassword
+      REDIS_HOST: "kyc_redis"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "yourredispassword"
+    depends_on:
+      - kyc_mongo
+      - kyc_redis
     volumes:
       - ./server:/app
       - /app/node_modules
@@ -39,9 +68,7 @@ services:
 
 volumes:
   kyc_mongo_data:
-    driver: local
   kyc_redis_data:
-    driver: local
 
 networks:
   kyc_net:

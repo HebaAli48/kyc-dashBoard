@@ -89,6 +89,9 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
   - pagination
   - Search and filters (by user, date range, role, region)
 
+- ⚡ **Caching**  
+  Uses **Redis** to temporarily store frequently accessed data (e.g., sessions, tokens, or API responses) in memory, improving application speed and reducing database load.
+
 - 🔍 **Advanced Filter & Search**
 
   - Robust client-side filtering and real-time search for logs and users by:
@@ -123,9 +126,8 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
 
   Services included:
 
-  - Node.js backend
-  - React frontend
-  - MongoDB
+  - kyc_server
+  - kyc_client
 
 - 👨‍💻 **Developer Tools**
 
@@ -137,72 +139,83 @@ Here's the updated **`README.md` features section** tailored to the **Multi-Regi
 ## 📁 Folder Structure
 
 ```
-kyc-dashboard/
-├── client/
-├   ├── src/
-├   ├──── App.jsx
-├   └──── theme.jsx
-├   ├──── components/
-├   │     ├── audit/
-├   │     ├    ├── AuditLogsChart.jsx
-├   │     ├    ├── AuditLogsStats.jsx
-├   │     ├    ├── AuditLogsTable.jsx
-├   │     ├── login/
-├   │     ├    ├── LoginForm.jsx
-├   │     ├── transactions/
-├   │     ├    ├──── TransactionCharts
-├   │     ├    ├      ├── AmountLineChart.jsx
-├   │     ├    ├      ├── RegionBarChart.jsx
-├   │     ├    ├      ├── StatusPieChart.jsx
-├   │     ├    ├      ├── TopSendersChart.jsx
-├   │     ├    ├── AddTransactionDialog.jsx
-├   │     ├    ├── AnalyticsDashboard.jsx
-├   │     ├    ├── TransactionsTable.jsx
-├   │     ├── users/
-├   │          ├── AllUserManagementComponents.jsx
-├   │          ├── RegionBarChart.jsx
-├   │          ├── StatsCard.jsx
-├   │          ├── UsersTable.jsx
+kyc-dashboard/                # Root directory of the KYC Dashboard project
+├── client/                   # Frontend application (React + Vite)
+├   ├── src/                  # Source code for the frontend
+├   ├──── App.jsx             # Main React component
+├   ├──── .dockerignore       # Files to exclude when building the frontend Docker image
+├   ├──── Dockerfile          # Dockerfile for building and serving the frontend
+├   └──── theme.jsx           # Theme configuration (colors, typography, etc.)
+├   ├──── components/         # Reusable UI components
+├   │     ├── audit/          # Components for audit logs visualization
+├   │     ├    ├── AuditLogsChart.jsx   # Chart displaying audit log data
+├   │     ├    ├── AuditLogsStats.jsx   # Stats summary for audit logs
+├   │     ├    ├── AuditLogsTable.jsx   # Table listing audit log entries
+├   │     ├── login/          # Components related to login page
+├   │     ├    ├── LoginForm.jsx        # Login form UI and logic
+├   │     ├── transactions/   # Components for transactions module
+├   │     ├    ├──── TransactionCharts  # Charts for transaction analytics
+├   │     ├    ├      ├── AmountLineChart.jsx # Line chart showing transaction amounts over time
+├   │     ├    ├      ├── RegionBarChart.jsx  # Bar chart of transactions by region
+├   │     ├    ├      ├── StatusPieChart.jsx  # Pie chart of transaction statuses
+├   │     ├    ├      ├── TopSendersChart.jsx # Chart for top transaction senders
+├   │     ├    ├── AddTransactionDialog.jsx   # Modal dialog to add a new transaction
+├   │     ├    ├── AnalyticsDashboard.jsx     # Analytics dashboard for transactions
+├   │     ├    ├── TransactionsTable.jsx      # Table listing transactions
+├   │     ├── users/          # Components for user management module
+├   │          ├── AllUserManagementComponents.jsx # Combined user management components
+├   │          ├── RegionBarChart.jsx         # Chart of users by region
+├   │          ├── StatsCard.jsx              # Card showing user stats
+├   │          ├── UsersTable.jsx             # Table listing users
 ├   │
-├   ├──── page/
-├   │     ├── AuditLogs.jsx
-├   │     ├── Dashboard.jsx
-├   │     ├── Home.jsx
-├   │     ├── Login.jsx
-├   │     ├── Setting.jsx
-├   │     ├──Transactions.jsx
-├   │     ├── UsersManagement.jsx
-├   ├──── utils/
-├   │     ├── Colors.jsx
-├   │     ├── motion.jsx
-├   ├──── context/
-├   │     ├── Setting.jsx
-├   │     ├──Transactions.jsx
-├   │     ├── UsersManagement.jsx
-├   ├──── routes/
-├         ├── Approuter.jsx
-├
-├server/
-├── src/
-│   ├── controllers/
-│   │   ├── audit.js
-│   │   ├── auth.js
-│   │   └── transactions.js
-│   ├── middleware/
-│   │   └── role.js
-│   ├── models/
-│   │   ├── AuditLog.js
-│   │   ├── Transaction.js
-│   │   └── User.js
-│   ├── routes/
-│   │   ├── audit.js
-│   │   ├── auth.js
-│   │   └── transactions.js
-│   ├── seedDB.js
-│   ├── index.js
-├── .env
-├── package.json
-├── docker-compose.yml
+├   ├──── page/               # Full page views
+├   │     ├── AuditLogs.jsx   # Audit logs page
+├   │     ├── Dashboard.jsx   # Main dashboard page
+├   │     ├── Home.jsx        # Landing/home page
+├   │     ├── Login.jsx       # Login page
+├   │     ├── Setting.jsx     # Settings page
+├   │     ├── Transactions.jsx# Transactions page
+├   │     ├── UsersManagement.jsx # User management page
+├   ├──── utils/              # Utility/helper functions
+├   │     ├── Colors.jsx      # Centralized color definitions
+├   │     ├── motion.jsx      # Animation configurations
+├   ├──── apis/               # API request files
+├   │     ├── api_config.js   # Base Axios configuration
+├   │     ├── userApi.js      # API methods for user-related actions
+├   ├──── store/              # Redux store configuration
+├   ├     ├──── slices/       # Redux slices (state modules)
+├   ├     │     ├── authSlice.jsx   # Authentication-related Redux state
+├   ├     │     ├── loadingSlice    # Loading indicator Redux state
+├   │     ├── store.jsx       # Root Redux store setup
+├   ├──── routes/             # Application routing
+├         ├── Approuter.jsx   # Defines app routes
+
+├server/                      # Backend application (Node.js + Express)
+├── src/                      # Backend source code
+├   ├──── .dockerignore       # Files to exclude from backend Docker build
+├   ├──── Dockerfile          # Dockerfile for backend container
+│   ├── seedDB.js             # Script to seed initial database data
+│   ├── index.js              # Main server entry point
+│   ├── config/               # Configuration files
+│   │   ├── redis.js          # Redis client configuration
+│   ├── controllers/          # Request handlers (business logic)
+│   │   ├── audit.js          # Controller for audit log operations
+│   │   ├── auth.js           # Controller for authentication
+│   │   └── transactions.js   # Controller for transactions
+│   ├── middleware/           # Express middlewares
+│   │   └── role.js           # Middleware for role-based access control
+│   ├── models/               # Mongoose models (MongoDB schemas)
+│   │   ├── AuditLog.js       # Audit log model
+│   │   ├── Transaction.js    # Transaction model
+│   │   └── User.js           # User model
+│   ├── routes/               # Express route definitions
+│       ├── audit.js          # Routes for audit-related APIs
+│       ├── auth.js           # Routes for authentication APIs
+│       └── transactions.js   # Routes for transaction APIs
+├── .env                      # Environment variables
+├── package.json              # Backend dependencies
+├── docker-compose.yml        # Docker Compose file (orchestration)
+
 ```
 
 ## 🖼 Screenshot
@@ -257,6 +270,7 @@ This is a full-stack KYC (Know Your Customer) Dashboard application, designed to
 - **express-rate-limit** — Rate limiting middleware
 - **morgan** — HTTP request logger
 - **nodemon** — Development tool for auto-restarting the server
+- **redis** — In-memory data store for transactions caching
 
 ---
 
