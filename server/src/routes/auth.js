@@ -14,5 +14,5 @@ router.post("/register", register);
 router.post("/login", login);
 router.get("/me", authenticate, getMe); // Protected route
 router.get("/", authenticate, getAllUsers);
-router.get("/stats", getUserStats);
+router.get("/stats", authenticate, getUserStats);
 export default router;

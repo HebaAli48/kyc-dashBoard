@@ -43,14 +43,15 @@ export const login = async (req, res) => {
     const user = await User.findOne({ username });
     if (!user) {
       return res
-        .status(401)
+        .status(400)
         .json({ error: "username or password is wrong , plz try again" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log("🚀 ~ login ~ isMatch:", isMatch);
     if (!isMatch) {
       return res
-        .status(401)
+        .status(400)
         .json({ error: "username or password is wrong , plz try again" });
     }
 
@@ -66,6 +67,7 @@ export const login = async (req, res) => {
 
     // Return user data without password
     const userData = user.toObject();
+    console.log("🚀 ~ login ~ userData:", userData);
     // console.log("🚀 ~ login ~ userData:", userData);
     delete userData.password;
     await AuditLog.create({
@@ -109,8 +111,10 @@ export const getMe = async (req, res) => {
 
 // Get all users
 export const getAllUsers = async (req, res) => {
+  const query = req.user.region === "global" ? {} : { region: req.user.region };
+
   try {
-    const users = await User.find().select("-password"); // Exclude passwords
+    const users = await User.find(query).select("-password"); // Exclude passwords
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -118,9 +122,17 @@ export const getAllUsers = async (req, res) => {
 };
 
 // Get user statistics for charts
+// Get user statistics for charts
 export const getUserStats = async (req, res) => {
   try {
-    const stats = await User.aggregate([
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+
+    const matchQuery =
+      req.user.region === "global" ? {} : { region: req.user.region };
+
+    // First aggregation for role distribution and total count
+    const roleStats = await User.aggregate([
+      { $match: matchQuery }, // Filter by region first
       {
         $group: {
           _id: "$role",
@@ -128,22 +140,18 @@ export const getUserStats = async (req, res) => {
         },
       },
       {
-        $group: {
-          _id: null,
-          roles: { $push: { role: "$_id", count: "$count" } },
-          total: { $sum: "$count" },
-        },
-      },
-      {
         $project: {
           _id: 0,
-          roles: 1,
-          total: 1,
+          role: "$_id",
+          count: 1,
         },
       },
+      { $sort: { count: -1 } }, // Optional: sort by count descending
     ]);
 
+    // Second aggregation for region distribution
     const regionStats = await User.aggregate([
+      { $match: matchQuery }, // Apply same region filter
       {
         $group: {
           _id: "$region",
@@ -157,14 +165,24 @@ export const getUserStats = async (req, res) => {
           count: 1,
         },
       },
+      { $sort: { count: -1 } }, // Optional: sort by count descending
     ]);
 
+    // Calculate total users from roleStats
+    const totalUsers = roleStats.reduce((sum, stat) => sum + stat.count, 0);
+
     res.status(200).json({
-      roleDistribution: stats[0]?.roles || [],
+      success: true,
+      roleDistribution: roleStats,
       regionDistribution: regionStats,
-      totalUsers: stats[0]?.total || 0,
+      totalUsers,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error in getUserStats:", error);
+    res.status(500).json({
+      error: "Failed to fetch user statistics",
+      details:
+        process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
   }
 };

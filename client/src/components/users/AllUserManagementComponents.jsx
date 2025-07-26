@@ -50,6 +50,8 @@ const AllUserManagementComponents = () => {
             },
           }),
         ]);
+        console.log("🚀 ~ fetchData ~ statsRes:", statsRes);
+        console.log("🚀 ~ fetchData ~ usersRes:", usersRes);
 
         setUsers(usersRes.data);
         setStats(statsRes.data);

@@ -48,6 +48,7 @@ const LoginForm = () => {
 
     try {
       const response = await loginUser({ username, password });
+      console.log("🚀 ~ handleSubmit ~ response:", response);
       if (response.status == 200) {
         const { token, user } = response.data;
         dispatch(login({ token, user })); // Fixed: Using the already declared dispatch
