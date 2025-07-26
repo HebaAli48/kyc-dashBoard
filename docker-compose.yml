@@ -1,48 +1,48 @@
-# docker-compose.yml
 version: "3.8"
 
 services:
-  mongo:
-    image: mongo:4.0
-    container_name: kyc_mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-
-  server:
+  kyc_server:
     build:
       context: ./server
-      dockerfile: Dockerfile
     container_name: kyc_server
+    restart: always
     ports:
-      - "5000:5000"
+      - "8000:8000"
     environment:
-      MONGO_URI: mongodb://root:example@mongo:27017/admin
+      NODE_ENV: production
+      MONGO_URI: mongodb://root:example@kyc_mongo:27017/kyc_db?authSource=admin
       JWT_SECRET: your_jwt_secret_here
-    depends_on:
-      - mongo
+      REDIS_HOST: kyc_redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: yourredispassword
     volumes:
       - ./server:/app
       - /app/node_modules
+    networks:
+      - kyc_net
 
-  client:
+  kyc_client:
     build:
       context: ./client
-      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: http://kyc_server:5000
     container_name: kyc_client
+    restart: always
     ports:
-      - "3000:3000"
+      - "80:80"
     environment:
-      REACT_APP_API_URL: http://localhost:5000
+      NODE_ENV: production
     depends_on:
-      - server
-    volumes:
-      - ./client:/app
-      - /app/node_modules
+      - kyc_server
+    networks:
+      - kyc_net
 
 volumes:
-  mongo_data:
+  kyc_mongo_data:
+    driver: local
+  kyc_redis_data:
+    driver: local
+
+networks:
+  kyc_net:
+    driver: bridge

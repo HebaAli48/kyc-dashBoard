@@ -42,12 +42,16 @@ const Transactions = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
 
+        // Add cache-busting parameter
+        const cacheBuster = Date.now();
+
         const res = await axios.get(`${baseUrl}/api/transactions`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
           params: {
             populate: "sender,receiver",
+            _: cacheBuster, // Forces fresh data when needed
           },
         });
 
@@ -59,6 +63,7 @@ const Transactions = () => {
         setLoading(false);
       }
     };
+
     fetchTransactions();
   }, []);
 
